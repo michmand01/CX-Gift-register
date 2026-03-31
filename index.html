@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gifts Register - Admin & User Management</title>
+    <style>
+        :root {
+            --bg-dark: #0F1724;
+            --bg-card: #1A2332;
+            --bg-sidebar: #131C2D;
+            --text-main: #E2E8F0;
+            --text-muted: #94A3B8;
+            --gold: #D4AF37;
+            --gold-glow: rgba(212, 175, 55, 0.4);
+            --danger: #EF4444;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --info: #3B82F6;
+            --cx-purple: #9333EA;
+            --audit-teal: #06B6D4;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --shadow-soft: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .gold { color: var(--gold); }
+        .gold-text { color: var(--gold); font-weight: bold; }
+        .warning { color: var(--danger); }
+        .success { color: var(--success); }
+        .info { color: var(--info); }
+
+        /* Role Badges */
+        .role-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .role-admin { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        .role-cx-admin { background: rgba(147, 51, 234, 0.3); color: var(--cx-purple); border: 1px solid rgba(147, 51, 234, 0.5); }
+        .role-manager { background: rgba(212, 175, 55, 0.15); color: var(--gold); }
+        .role-staff { background: rgba(59, 130, 246, 0.15); color: var(--info); }
+        .role-viewer { background: rgba(148, 163, 184, 0.15); color: var(--text-muted); }
+        .role-cx { background: rgba(147, 51, 234, 0.15); color: var(--cx-purple); }
+        .role-audit { background: rgba(6, 182, 212, 0.15); color: var(--audit-teal); }
+
+        /* Buttons */
+        .btn {
+            border: none;
+            cursor: pointer;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold), #B8952E);
+            color: #000;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 0 15px var(--gold-glow);
+            transform: translateY(-1px);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #DC2626);
+            color: white;
+        }
+        .btn-ghost { background: transparent; color: var(--text-muted); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
+        .btn-sm { padding: 8px 14px; font-size: 0.85rem; border-radius: 8px; }
+        .btn-full { width: 100%; }
+        .btn-reset { 
+            background: linear-gradient(135deg, var(--warning), #D97706);
+            color: white;
+        }
+
+        /* Login View */
+        #login-view {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at top right, #1a253a 0%, #0F1724 60%);
+        }
+
+        .auth-card {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-soft);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .logo-text { margin-bottom: 30px; font-weight: 300; letter-spacing: 2px; font-size: 1.8rem; }
+
+        /* App Layout */
+        .app-layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--bg-sidebar);
+            border-right: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+            padding: 25px;
+        }
+
+        .sidebar-header { margin-bottom: 40px; }
+        
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            flex: 1;
+        }
+
+        .nav-item {
+            padding: 14px 16px;
+            border-radius: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+        }
+        
+        .nav-item:hover {
+            background: rgba(255,255,255,0.03);
+            color: var(--text-main);
+        }
+
+        .nav-item.active {
+            background: rgba(212, 175, 55, 0.1);
+            color: var(--gold);
+            font-weight: 600;
+        }
+
+        .user-mini-profile {
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            overflow-y: auto;
+            padding: 30px;
+            background: var(--bg-dark);
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .page-title { font-size: 1.8rem; font-weight: 600; }
+
+        /* Search and Filter Bar */
+        .search-filter-container {
+            background: var(--bg-card);
+            padding: 15px 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: 25px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            border: 1px solid rgba(255,255,255,0.03);
+            flex-wrap: wrap;
+        }
+
+        .search-wrapper { position: relative; flex: 1; min-width: 200px; }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .search-input { padding-left: 40px !important; }
+
+        .filter-group { display: flex; gap: 8px; align-items: center; }
+        .filter-tag {
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .filter-tag.active {
+            background: rgba(212, 175, 55, 0.15);
+            color: var(--gold);
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        /* Pages */
+        .page { display: none; animation: fadeIn 0.3s ease; }
+        .page.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(255,255,255,0.02);
+        }
+        .stat-label { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 8px; }
+        .stat-value { font-size: 2.2rem; font-weight: bold; color: var(--gold); }
+
+        /* Gift Grid */
+        .cards-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 24px;
+        }
+
+        .gift-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.03);
+            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
+        }
+        .gift-card:hover { transform: translateY(-4px); border-color: rgba(212, 175, 55, 0.2); }
+        
+        .gift-img-placeholder {
+            height: 160px;
+            background: rgba(0,0,0,0.2);
+            border-radius: var(--radius-md);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 2.5rem;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .gift-sku {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.6);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-family: monospace;
+        }
+
+        .gift-meta { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-top: auto; 
+            padding-top: 15px;
+        }
+
+        .gift-description {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.4;
+            margin: 8px 0 12px 0;
+            max-height: 40px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        
+        .stock-badge { 
+            background: rgba(255,255,255,0.05); 
+            padding: 6px 12px; 
+            border-radius: 20px; 
+            font-size: 0.85rem; 
+            color: var(--text-muted);
+        }
+        .stock-low { background: rgba(245, 158, 11, 0.15); color: var(--warning); border: 1px solid rgba(245, 158, 11, 0.2); }
+        .stock-out { background: rgba(239, 68, 68, 0.3); color: #fff; font-weight: bold; }
+
+        /* Users List */
+        .users-list {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .user-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            display: grid;
+            grid-template-columns: 40px 2fr 1fr 1fr 100px;
+            align-items: center;
+            gap: 15px;
+        }
+        .user-item:last-child { border-bottom: none; }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gold), #B8952E);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .user-name { font-weight: 600; }
+        .user-email { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Transactions List */
+        .tx-container { background: var(--bg-card); border-radius: var(--radius-lg); padding: 20px; }
+        .tabs { margin-bottom: 25px; display: flex; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; }
+        .tab {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .tab.active { background: rgba(212, 175, 55, 0.1); color: var(--gold); }
+
+        .tx-list { list-style: none; }
+        .tx-item { 
+            padding: 16px; 
+            border-bottom: 1px solid rgba(255,255,255,0.03); 
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            align-items: center;
+            gap: 15px;
+        }
+        .tx-item:last-child { border-bottom: none; }
+        
+        .tx-icon {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+        .bg-add { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .bg-take { background: rgba(212, 175, 55, 0.1); color: var(--gold); }
+
+        .tx-details strong { display: block; margin-bottom: 4px; color: var(--text-main); }
+        .tx-sub { font-size: 0.85rem; color: var(--text-muted); }
+        .tx-user { color: var(--gold); font-size: 0.85rem; }
+
+        /* Forms */
+        .form-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; margin-bottom: 8px; color: var(--text-muted); font-size: 0.9rem; }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            outline: none;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus { border-color: var(--gold); }
+        textarea { min-height: 80px; resize: vertical; }
+
+        /* Modals */
+        dialog {
+            background: var(--bg-card);
+            color: var(--text-main);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%; max-width: 450px;
+            z-index: 1000;
+        }
+        dialog::backdrop { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
+        dialog h2 { margin-bottom: 20px; font-size: 1.5rem; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 30px; }
+
+        /* Gift Details Modal */
+        .gift-details-container {
+            background: rgba(0,0,0,0.2);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .detail-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        .detail-label {
+            color: var(--text-muted);
+            width: 120px;
+            flex-shrink: 0;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: var(--bg-card);
+            color: var(--text-main);
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Permissions Info */
+        .permissions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .permission-item {
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+        }
+        .permission-allowed { color: var(--success); }
+        .permission-denied { color: var(--danger); }
+
+        /* Password Reset Link */
+        .password-reset-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        .password-reset-link a {
+            color: var(--gold);
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .password-reset-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* Reset Password Modal */
+        .reset-form-container {
+            margin-bottom: 20px;
+        }
+
+        /* Status Indicators */
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .status-active { background: var(--success); }
+        .status-inactive { background: var(--danger); }
+        .status-pending-reset { background: var(--warning); }
+
+        @media (max-width: 768px) {
+            .app-layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+            .sidebar { padding: 15px; flex-direction: row; align-items: center; justify-content: space-between; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
+            .sidebar-header { margin: 0; }
+            .nav-links { flex-direction: row; gap: 5px; flex: 0; }
+            .nav-item span { display: none; }
+            .nav-item { padding: 10px; }
+            .user-mini-profile { display: none; }
+            .main-content { padding: 15px; }
+            .tx-item { grid-template-columns: 1fr; gap: 10px; }
+            .user-item { 
+                grid-template-columns: 1fr; 
+                gap: 10px;
+                position: relative;
+                padding-bottom: 20px;
+            }
+            .user-actions {
+                position: absolute;
+                bottom: 10px;
+                right: 10px;
+                display: flex;
+                gap: 5px;
+            }
+            .user-details { margin-bottom: 5px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .cards-list { grid-template-columns: 1fr; }
+            .permissions-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 480px) {
+            .auth-card { padding: 25px 20px; }
+            .search-filter-container { flex-direction: column; align-items: stretch; }
+            .search-wrapper { min-width: 100%; }
+            .filter-group { flex-wrap: wrap; }
+            .page-header { flex-direction: column; align-items: stretch; }
+            .modal-actions { flex-direction: column; }
+            .modal-actions button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app">
+        
+        <!-- Login View -->
+        <div id="login-view" class="view">
+            <div class="auth-card">
+                <div class="logo-text">Gifts<span class="gold">Register</span></div>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">Secure Access Portal</p>
+                <form id="login-form">
+                    <div class="form-group">
+                        <label>Email Address</label>
+                        <input type="email" id="login-email" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="login-password" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-full">Sign In</button>
+                </form>
+                <div class="password-reset-link">
+                    <a id="forgot-password-link" onclick="openForgotPasswordModal()">Forgot your password? Contact Admin</a>
+                </div>
+                <p id="login-error" style="color: var(--danger); margin-top: 15px; display: none;">Invalid credentials</p>
+            </div>
+        </div>
+
+        <!-- App Layout -->
+        <div id="app-layout-view" class="app-layout hidden">
+            
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="logo-text" style="font-size: 1.4rem; margin:0;">Gifts<span class="gold">Reg</span></div>
+                </div>
+                
+                <nav class="nav-links">
+                    <a href="#" class="nav-item active" onclick="nav('home')">
+                        <span>📊</span> <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="nav('inventory')">
+                        <span>🎁</span> <span>Inventory</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="nav('transactions')">
+                        <span>📝</span> <span>Transactions</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="nav('users')">
+                        <span>👥</span> <span>Users</span>
+                    </a>
+                </nav>
+
+                <div class="user-mini-profile">
+                    <div style="font-size: 0.85rem;">
+                        <div id="current-user-name" style="color: white; font-weight:600">Victor</div>
+                        <div id="current-user-role" style="color: var(--text-muted)">CX Admin</div>
+                    </div>
+                    <button id="logout-btn" class="btn btn-ghost btn-sm">⏻</button>
+                </div>
+            </aside>
+
+            <main class="main-content">
+                
+                <!-- PAGE: Home -->
+                <div id="page-home" class="page active">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Overview</h1>
+                            <p style="color: var(--text-muted)">Welcome, <span id="greeting-name"></span></p>
+                        </div>
+                        <div id="role-badge-home" class="role-badge role-cx-admin">CX Admin</div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-label">Total Stock Items</div>
+                            <div class="stat-value" id="stat-total-items">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Low Stock Items (&lt;25)</div>
+                            <div class="stat-value" id="stat-low-stock">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Out of Stock</div>
+                            <div class="stat-value" id="stat-out-stock">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Active Users</div>
+                            <div class="stat-value" id="stat-active-users">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Permissions Summary -->
+                    <div id="permissions-summary" class="permissions-grid">
+                        <!-- Dynamically filled based on user role -->
+                    </div>
+
+                    <div class="page-header" style="margin-top: 40px; margin-bottom: 20px;">
+                        <h2 style="font-size: 1.2rem;">Quick Activity</h2>
+                        <button class="btn btn-ghost btn-sm" onclick="nav('transactions')">Full History</button>
+                    </div>
+                    
+                    <div class="tx-container">
+                        <ul id="recent-tx-list" class="tx-list"></ul>
+                    </div>
+                </div>
+
+                <!-- PAGE: Inventory -->
+                <div id="page-inventory" class="page">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Inventory</h1>
+                            <p style="color: var(--text-muted)">Manage and search gift assets</p>
+                        </div>
+                        <button id="open-add-modal" class="btn btn-primary">+ New Item</button>
+                    </div>
+
+                    <!-- Search and Filter Bar -->
+                    <div class="search-filter-container">
+                        <div class="search-wrapper">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" id="inventory-search" class="search-input" placeholder="Search by name, SKU, or description...">
+                        </div>
+                        <div class="filter-group">
+                            <div class="filter-tag active" data-filter="all" onclick="setInventoryFilter('all')">All</div>
+                            <div class="filter-tag" data-filter="low" onclick="setInventoryFilter('low')">Low Stock (&lt;25)</div>
+                            <div class="filter-tag" data-filter="out" onclick="setInventoryFilter('out')">Out of Stock</div>
+                        </div>
+                    </div>
+
+                    <div id="gifts-list" class="cards-list"></div>
+                    <div id="inventory-empty" class="hidden" style="text-align: center; padding: 100px 0; color: var(--text-muted);">
+                        <div style="font-size: 3rem; margin-bottom: 10px;">📦</div>
+                        <p>No items match your search/filter criteria.</p>
+                    </div>
+                </div>
+
+                <!-- PAGE: Transactions -->
+                <div id="page-transactions" class="page">
+                    <div class="page-header">
+                        <h1 class="page-title">Transaction History</h1>
+                        <button class="btn btn-ghost btn-sm" onclick="exportTransactions()">Export CSV</button>
+                    </div>
+
+                    <div class="tx-container">
+                        <div class="tabs">
+                            <button class="tab active" data-tx="all" onclick="setTxFilter('all')">All History</button>
+                            <button class="tab" data-tx="ADD" onclick="setTxFilter('ADD')">Restocks</button>
+                            <button class="tab" data-tx="TAKE" onclick="setTxFilter('TAKE')">Issues</button>
+                        </div>
+                        <ul id="full-tx-list" class="tx-list"></ul>
+                    </div>
+                </div>
+
+                <!-- PAGE: Users -->
+                <div id="page-users" class="page">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">User Management</h1>
+                            <p style="color: var(--text-muted)">Manage users and their permissions</p>
+                        </div>
+                        <button id="open-add-user-modal" class="btn btn-primary">+ Add User</button>
+                    </div>
+
+                    <!-- Role Permissions Legend -->
+                    <div class="search-filter-container" style="margin-bottom: 20px;">
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <div><span class="role-badge role-cx-admin">CX Admin</span> Full access</div>
+                            <div><span class="role-badge role-manager">Manager</span> Manage inventory</div>
+                            <div><span class="role-badge role-staff">Staff</span> Issue gifts only</div>
+                            <div><span class="role-badge role-viewer">Viewer</span> View only</div>
+                            <div><span class="role-badge role-cx">CX User</span> Customer service access</div>
+                            <div><span class="role-badge role-audit">Audit</span> Audit/reporting only</div>
+                        </div>
+                    </div>
+
+                    <div class="users-list">
+                        <div id="users-list-header" class="user-item" style="background: rgba(0,0,0,0.2); font-weight: 600;">
+                            <div></div>
+                            <div>User Details</div>
+                            <div>Role</div>
+                            <div>Status</div>
+                            <div>Actions</div>
+                        </div>
+                        <div id="users-list-container">
+                            <!-- Users will be dynamically inserted here -->
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <dialog id="modal-change-password">
+        <form id="force-change-form">
+            <h2>⚠️ Security Reset Required</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Your password has been reset. Please set a new secure password.</p>
+            <div class="form-group">
+                <label>New Password (min 6 characters)</label>
+                <input type="password" id="new-password" minlength="6" required>
+            </div>
+            <div class="form-group">
+                <label>Confirm New Password</label>
+                <input type="password" id="confirm-password" minlength="6" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost close-modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save and Continue</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="modal-forgot-password">
+        <form id="forgot-password-form">
+            <h2>Password Reset Request</h2>
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Contact your administrator to reset your password.</p>
+            <div class="form-group">
+                <label>Admin Email</label>
+                <input type="email" value="victor@cx" readonly>
+            </div>
+            <div class="form-group">
+                <label>Your Email (for reference)</label>
+                <input type="email" id="forgot-email" placeholder="Enter your email">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost close-modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="copyAdminEmail()">Copy Admin Email</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="modal-reset-user-password">
+        <form id="reset-user-password-form">
+            <h2>Reset User Password</h2>
+            <div class="gift-details-container">
+                <div class="detail-row">
+                    <span class="detail-label">User:</span>
+                    <span id="reset-user-name" class="gold-text"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Email:</span>
+                    <span id="reset-user-email"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Role:</span>
+                    <span id="reset-user-role"></span>
+                </div>
+            </div>
+            <input type="hidden" name="userId" id="reset-user-id">
+            <p style="color: var(--warning); margin: 15px 0; font-size: 0.9rem;">
+                ⚠️ This will reset the user's password to "Password". They will be forced to change it on next login.
+            </p>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost close-modal">Cancel</button>
+                <button type="submit" class="btn btn-reset">Reset Password</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="modal-take-gift">
+        <form id="take-gift-form">
+            <h2>Issue Gift</h2>
+            <div class="gift-details-container">
+                <div class="detail-row">
+                    <span class="detail-label">Item:</span>
+                    <span id="take-gift-name" class="gold-text"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">SKU:</span>
+                    <span id="take-gift-sku"></span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Available:</span>
+                    <span id="take-max-qty"></span>
+                </div>
+            </div>
+            <input type="hidden" name="giftId" id="take-gift-id">
+            <div class="form-group">
+                <label>Quantity</label>
+                <input type="number" name="quantity" min="1" value="1" required>
+            </div>
+            <div class="form-group">
+                <label>Recipient Name</label>
+                <input type="text" name="recipientName" required placeholder="Enter recipient name">
+            </div>
+            <div class="form-group">
+                <label>Issued By</label>
+                <input type="text" id="issued-by-name" value="Victor" readonly>
+            </div>
+            <div class="form-group">
+                <label>Reason</label>
+                <select name="reason">
+                    <option>Client Meeting</option>
+                    <option>Staff Recognition</option>
+                    <option>Marketing Event</option>
+                    <option>Conference Giveaway</option>
+                    <option>Other</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost close-modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Complete Issue</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="modal-add-gift">
+        <form id="add-gift-form">
+            <h2>New Inventory Item</h2>
+            <div class="form-group">
+                <label>Item Name *</label>
+                <input type="text" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" placeholder="Optional description of the item"></textarea>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div class="form-group">
+                    <label>SKU *</label>
+                    <input type="text" name="sku" required>
+                </div>
+                <div class="form-group">
+                    <label>Initial Stock *</label>
+                    <input type="number" name="quantity" min="0" value="0" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Added By</label>
+                <input type="text" id="added-by-name" value="Victor" readonly>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost close-modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add to Inventory</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="modal-add-user">
+        <form id="add-user-form">
+            <h2>Add New User</h2>
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" name="name" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address *</label>
+                <input type="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label>Role *</label>
+                <select name="role" required>
+                    <option value="cx-admin">CX Administrator</option>
+                    <option value="manager">Manager</option>
+                    <option value="staff">Staff</option>
+                    <option value="viewer">Viewer</option>
+                    <option value="cx">CX User</option>
+                    <option value="audit">Audit</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Temporary Password *</label>
+                <input type="text" name="password" value="Password" readonly>
+                <small style="color: var(--text-muted); font-size: 0.8rem;">User will be prompted to change on first login</small>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost close-modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Create User</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="modal-edit-user">
+        <form id="edit-user-form">
+            <h2>Edit User</h2>
+            <input type="hidden" name="userId" id="edit-user-id">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" name="name" id="edit-user-name" required>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" id="edit-user-email" required>
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <select name="role" id="edit-user-role" required>
+                    <option value="cx-admin">CX Administrator</option>
+                    <option value="manager">Manager</option>
+                    <option value="staff">Staff</option>
+                    <option value="viewer">Viewer</option>
+                    <option value="cx">CX User</option>
+                    <option value="audit">Audit</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status" id="edit-user-status" required>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-ghost close-modal">Cancel</button>
+                <button type="button" class="btn btn-reset" id="reset-password-btn">Reset Password</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </dialog>
+
+    <script>
+        // --- State ---
+        const state = {
+            currentUser: null,
+            users: [
+                { 
+                    _id: 'u1', 
+                    name: 'Victor', 
+                    email: 'victor@cx', 
+                    role: 'cx-admin', 
+                    password: 'Password',
+                    status: 'active',
+                    lastLogin: new Date(),
+                    createdAt: new Date('2024-01-01'),
+                    forcePasswordChange: false
+                },
+                { 
+                    _id: 'u2', 
+                    name: 'Miranda', 
+                    email: 'miranda@cx', 
+                    role: 'cx-admin', 
+                    password: 'Password',
+                    status: 'active',
+                    lastLogin: new Date(Date.now() - 86400000),
+                    createdAt: new Date('2024-02-01'),
+                    forcePasswordChange: false
+                },
+                { 
+                    _id: 'u3', 
+                    name: 'Ekem', 
+                    email: 'ekem@cx', 
+                    role: 'cx-admin', 
+                    password: 'Password',
+                    status: 'active',
+                    lastLogin: new Date(Date.now() - 172800000),
+                    createdAt: new Date('2024-02-15'),
+                    forcePasswordChange: false
+                },
+                { 
+                    _id: 'u4', 
+                    name: 'Michelle', 
+                    email: 'michelle@cx', 
+                    role: 'cx-admin', 
+                    password: 'Password',
+                    status: 'active',
+                    lastLogin: null,
+                    createdAt: new Date('2024-03-01'),
+                    forcePasswordChange: true
+                },
+                { 
+                    _id: 'u5', 
+                    name: 'Fungai', 
+                    email: 'fungai@cx', 
+                    role: 'cx-admin', 
+                    password: 'Password',
+                    status: 'active',
+                    lastLogin: null,
+                    createdAt: new Date('2024-03-10'),
+                    forcePasswordChange: true
+                },
+                { 
+                    _id: 'u6', 
+                    name: 'Manager User', 
+                    email: 'manager@department.local', 
+                    role: 'manager', 
+                    password: 'Password',
+                    status: 'active',
+                    lastLogin: null,
+                    createdAt: new Date('2024-03-15'),
+                    forcePasswordChange: true
+                },
+                { 
+                    _id: 'u7', 
+                    name: 'Staff User', 
+                    email: 'staff@department.local', 
+                    role: 'staff', 
+                    password: 'Password',
+                    status: 'active',
+                    lastLogin: null,
+                    createdAt: new Date('2024-03-20'),
+                    forcePasswordChange: true
+                },
+                { 
+                    _id: 'u8', 
+                    name: 'CX User', 
+                    email: 'cxuser@department.local', 
+                    role: 'cx', 
+                    password: 'Password',
+                    status: 'active',
+                    lastLogin: null,
+                    createdAt: new Date('2024-03-25'),
+                    forcePasswordChange: true
+                }
+            ],
+            gifts: [
+                { 
+                    _id: 'g1', 
+                    name: 'Executive Pen Set', 
+                    sku: 'PEN-001', 
+                    quantity: 42, 
+                    unit: 'set', 
+                    description: 'Premium engraved pen set for executives',
+                    createdAt: new Date('2024-01-15'),
+                    createdBy: 'Victor'
+                },
+                { 
+                    _id: 'g2', 
+                    name: 'Branded Hoodie (L)', 
+                    sku: 'CLO-002', 
+                    quantity: 2, 
+                    unit: 'item', 
+                    description: 'Company branded hoodies for staff',
+                    createdAt: new Date('2024-02-20'),
+                    createdBy: 'Victor'
+                },
+                { 
+                    _id: 'g3', 
+                    name: 'Ceramic Mug', 
+                    sku: 'MUG-003', 
+                    quantity: 150, 
+                    unit: 'item', 
+                    description: 'Logo printed ceramic mugs for clients',
+                    createdAt: new Date('2024-01-10'),
+                    createdBy: 'Victor'
+                },
+                { 
+                    _id: 'g4', 
+                    name: 'Leather Notebook', 
+                    sku: 'NB-005', 
+                    quantity: 0, 
+                    unit: 'item', 
+                    description: 'Genuine leather-bound notebooks',
+                    createdAt: new Date('2024-03-01'),
+                    createdBy: 'Victor'
+                }
+            ],
+            transactions: [
+                { 
+                    action: 'TAKE', 
+                    itemName: 'Executive Pen Set', 
+                    delta: -1, 
+                    recipient: 'GCEO', 
+                    user: 'Fungai', 
+                    timestamp: new Date(Date.now() - 600000), // 10 mins ago
+                    reason: 'Client Meeting'
+                },
+                { 
+                    action: 'ADD', 
+                    itemName: 'Ceramic Mug', 
+                    delta: 50, 
+                    recipient: '-', 
+                    user: 'Ekem', 
+                    timestamp: new Date(Date.now() - 7200000), // 2 hours ago
+                    reason: 'Restock'
+                },
+                { 
+                    action: 'TAKE', 
+                    itemName: 'Branded Hoodie (L)', 
+                    delta: -3, 
+                    recipient: 'Marketing Team', 
+                    user: 'Victor', 
+                    timestamp: new Date(Date.now() - 86400000), // 1 day ago
+                    reason: 'Staff Recognition'
+                },
+                { 
+                    action: 'ADD', 
+                    itemName: 'Executive Pen Set', 
+                    delta: 20, 
+                    recipient: '-', 
+                    user: 'Miranda', 
+                    timestamp: new Date(Date.now() - 172800000), // 2 days ago
+                    reason: 'Restock'
+                }
+            ],
+            inventoryFilter: 'all',
+            inventorySearch: '',
+            txFilter: 'all'
+        };
+
+        // --- Role Permissions ---
+        const ROLE_PERMISSIONS = {
+            'cx-admin': {
+                name: 'CX Admin',
+                permissions: {
+                    viewDashboard: true,
+                    viewInventory: true,
+                    addGifts: true,
+                    editGifts: true,
+                    deleteGifts: true,
+                    takeGifts: true,
+                    viewTransactions: true,
+                    exportData: true,
+                    manageUsers: true,
+                    viewUsers: true,
+                    resetPasswords: true
+                }
+            },
+            manager: {
+                name: 'Manager',
+                permissions: {
+                    viewDashboard: true,
+                    viewInventory: true,
+                    addGifts: true,
+                    editGifts: true,
+                    deleteGifts: false,
+                    takeGifts: true,
+                    viewTransactions: true,
+                    exportData: true,
+                    manageUsers: false,
+                    viewUsers: true,
+                    resetPasswords: false
+                }
+            },
+            staff: {
+                name: 'Staff',
+                permissions: {
+                    viewDashboard: true,
+                    viewInventory: true,
+                    addGifts: false,
+                    editGifts: false,
+                    deleteGifts: false,
+                    takeGifts: true,
+                    viewTransactions: true,
+                    exportData: false,
+                    manageUsers: false,
+                    viewUsers: true,
+                    resetPasswords: false
+                }
+            },
+            viewer: {
+                name: 'Viewer',
+                permissions: {
+                    viewDashboard: true,
+                    viewInventory: true,
+                    addGifts: false,
+                    editGifts: false,
+                    deleteGifts: false,
+                    takeGifts: false,
+                    viewTransactions: true,
+                    exportData: false,
+                    manageUsers: false,
+                    viewUsers: true,
+                    resetPasswords: false
+                }
+            },
+            cx: {
+                name: 'CX User',
+                permissions: {
+                    viewDashboard: true,
+                    viewInventory: true,
+                    addGifts: false,
+                    editGifts: false,
+                    deleteGifts: false,
+                    takeGifts: true,
+                    viewTransactions: true,
+                    exportData: false,
+                    manageUsers: false,
+                    viewUsers: false,
+                    resetPasswords: false
+                }
+            },
+            audit: {
+                name: 'Audit',
+                permissions: {
+                    viewDashboard: true,
+                    viewInventory: true,
+                    addGifts: false,
+                    editGifts: false,
+                    deleteGifts: false,
+                    takeGifts: false,
+                    viewTransactions: true,
+                    exportData: true,
+                    manageUsers: false,
+                    viewUsers: true,
+                    resetPasswords: false
+                }
+            }
+        };
+
+        // --- Helper Functions ---
+        function formatTimeAgo(date) {
+            if (!date) return 'Never';
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} minute${diffMins !== 1 ? 's' : ''} ago`;
+            if (diffHours < 24) return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`;
+            if (diffDays < 7) return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`;
+            
+            return date.toLocaleDateString();
+        }
+
+        function formatFullDateTime(date) {
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').toUpperCase();
+        }
+
+        function getUserPermissions() {
+            if (!state.currentUser) return null;
+            return ROLE_PERMISSIONS[state.currentUser.role].permissions;
+        }
+
+        function checkPermission(permission) {
+            const permissions = getUserPermissions();
+            return permissions && permissions[permission] === true;
+        }
+
+        // --- Navigation ---
+        window.nav = (pageId) => {
+            // Check permission for page
+            const permissionMap = {
+                'home': 'viewDashboard',
+                'inventory': 'viewInventory',
+                'transactions': 'viewTransactions',
+                'users': 'viewUsers'
+            };
+            
+            if (permissionMap[pageId] && !checkPermission(permissionMap[pageId])) {
+                alert('You do not have permission to access this page.');
+                return;
+            }
+
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const activeLink = Array.from(document.querySelectorAll('.nav-item')).find(el => el.getAttribute('onclick')?.includes(pageId));
+            if(activeLink) activeLink.classList.add('active');
+
+            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+            document.getElementById(`page-${pageId}`).classList.add('active');
+            renderAll();
+        };
+
+        // --- Search & Filtering Logic ---
+        window.setInventoryFilter = (val) => {
+            state.inventoryFilter = val;
+            document.querySelectorAll('[data-filter]').forEach(tag => {
+                tag.classList.toggle('active', tag.dataset.filter === val);
+            });
+            renderGifts();
+        };
+
+        document.getElementById('inventory-search').addEventListener('input', (e) => {
+            state.inventorySearch = e.target.value.toLowerCase();
+            renderGifts();
+        });
+
+        window.setTxFilter = (val) => {
+            state.txFilter = val;
+            document.querySelectorAll('[data-tx]').forEach(t => {
+                t.classList.toggle('active', t.dataset.tx === val);
+            });
+            renderTransactions('full-tx-list', 100);
+        };
+
+        // --- Core Functions ---
+        function renderAll() {
+            updateUIForCurrentUser();
+            renderStats();
+            renderGifts();
+            renderTransactions('recent-tx-list', 5);
+            renderTransactions('full-tx-list', 100);
+            renderUsers();
+        }
+
+        function updateUIForCurrentUser() {
+            if (!state.currentUser) return;
+            
+            const user = state.currentUser;
+            const roleInfo = ROLE_PERMISSIONS[user.role];
+            
+            // Update sidebar
+            document.getElementById('current-user-name').textContent = user.name;
+            document.getElementById('current-user-role').textContent = roleInfo.name;
+            
+            // Update greeting
+            document.getElementById('greeting-name').textContent = user.name.split(' ')[0];
+            
+            // Update role badge
+            const roleBadge = document.getElementById('role-badge-home');
+            roleBadge.textContent = roleInfo.name;
+            roleBadge.className = `role-badge role-${user.role.replace('-admin', '-admin')}`;
+            
+            // Update modal fields
+            document.getElementById('issued-by-name').value = user.name;
+            document.getElementById('added-by-name').value = user.name;
+            
+            // Show/hide admin-only features
+            const usersNav = document.querySelector('.nav-item[onclick*="users"]');
+            if (usersNav) {
+                usersNav.style.display = checkPermission('viewUsers') ? 'flex' : 'none';
+            }
+            
+            const addItemBtn = document.getElementById('open-add-modal');
+            if (addItemBtn) {
+                addItemBtn.style.display = checkPermission('addGifts') ? 'inline-flex' : 'none';
+            }
+            
+            const addUserBtn = document.getElementById('open-add-user-modal');
+            if (addUserBtn) {
+                addUserBtn.style.display = checkPermission('manageUsers') ? 'inline-flex' : 'none';
+            }
+            
+            // Render permissions summary
+            renderPermissionsSummary();
+        }
+
+        function renderPermissionsSummary() {
+            if (!state.currentUser) return;
+            
+            const permissions = getUserPermissions();
+            const container = document.getElementById('permissions-summary');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div class="permission-item">
+                    <div style="margin-bottom: 8px; font-weight: 600;">Inventory Access</div>
+                    <div>${permissions.addGifts ? '✅ Full management' : (permissions.takeGifts ? '✅ Issue gifts only' : '✅ View only')}</div>
+                </div>
+                <div class="permission-item">
+                    <div style="margin-bottom: 8px; font-weight: 600;">User Management</div>
+                    <div>${permissions.manageUsers ? '✅ Full access' : '❌ Not allowed'}</div>
+                </div>
+                <div class="permission-item">
+                    <div style="margin-bottom: 8px; font-weight: 600;">Data Export</div>
+                    <div>${permissions.exportData ? '✅ Allowed' : '❌ Not allowed'}</div>
+                </div>
+                <div class="permission-item">
+                    <div style="margin-bottom: 8px; font-weight: 600;">Role Level</div>
+                    <div>${ROLE_PERMISSIONS[state.currentUser.role].name}</div>
+                </div>
+            `;
+        }
+
+        function renderStats() {
+            const total = state.gifts.reduce((sum, g) => sum + parseInt(g.quantity), 0);
+            const low = state.gifts.filter(g => g.quantity > 0 && g.quantity < 25).length;
+            const out = state.gifts.filter(g => g.quantity <= 0).length;
+            const activeUsers = state.users.filter(u => u.status === 'active').length;
+            
+            document.getElementById('stat-total-items').textContent = total;
+            
+            const lowEl = document.getElementById('stat-low-stock');
+            lowEl.textContent = low;
+            lowEl.style.color = low > 0 ? 'var(--warning)' : 'var(--text-muted)';
+            
+            const outEl = document.getElementById('stat-out-stock');
+            outEl.textContent = out;
+            outEl.style.color = out > 0 ? 'var(--danger)' : 'var(--text-muted)';
+            
+            document.getElementById('stat-active-users').textContent = activeUsers;
+        }
+
+        function renderGifts() {
+            const list = document.getElementById('gifts-list');
+            const emptyState = document.getElementById('inventory-empty');
+            const canTake = checkPermission('takeGifts');
+            
+            // Filter Data
+            let filtered = state.gifts.filter(gift => {
+                const matchesSearch = gift.name.toLowerCase().includes(state.inventorySearch) || 
+                                    gift.sku.toLowerCase().includes(state.inventorySearch) ||
+                                    (gift.description && gift.description.toLowerCase().includes(state.inventorySearch));
+                
+                let matchesFilter = true;
+                if (state.inventoryFilter === 'low') matchesFilter = gift.quantity > 0 && gift.quantity < 25;
+                if (state.inventoryFilter === 'out') matchesFilter = gift.quantity <= 0;
+                
+                return matchesSearch && matchesFilter;
+            });
+
+            emptyState.classList.toggle('hidden', filtered.length > 0);
+            list.innerHTML = filtered.map(gift => {
+                const isOut = gift.quantity <= 0;
+                const isLow = !isOut && gift.quantity < 25;
+                
+                return `
+                <div class="gift-card">
+                    <div class="gift-sku">${gift.sku}</div>
+                    <div class="gift-img-placeholder" style="background: ${isOut ? 'rgba(239,68,68,0.05)' : (isLow ? 'rgba(245,158,11,0.05)' : 'rgba(0,0,0,0.2)')}">
+                        ${gift.name.charAt(0)}
+                    </div>
+                    <h3 style="font-size: 1.1rem; margin-bottom: 5px;">${gift.name}</h3>
+                    ${gift.description ? `<div class="gift-description" title="${gift.description}">${gift.description}</div>` : ''}
+                    <div class="gift-meta">
+                        <div class="tooltip">
+                            <span class="stock-badge ${isOut ? 'stock-out' : (isLow ? 'stock-low' : '')}">
+                                ${isOut ? 'OUT OF STOCK' : `${gift.quantity} ${gift.unit}${gift.quantity !== 1 ? 's' : ''}`}
+                            </span>
+                            ${isLow ? `<span class="tooltip-text">Low stock warning: less than 25 items remaining</span>` : ''}
+                        </div>
+                        <button class="btn btn-primary btn-sm" ${(!canTake || isOut) ? 'disabled style="opacity:0.3; cursor:not-allowed"' : ''} onclick="openTakeModal('${gift._id}')">Take</button>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function renderUsers() {
+            const container = document.getElementById('users-list-container');
+            const canManageUsers = checkPermission('manageUsers');
+            const canResetPasswords = checkPermission('resetPasswords');
+            
+            container.innerHTML = state.users.map(user => {
+                const roleInfo = ROLE_PERMISSIONS[user.role];
+                const isCurrentUser = state.currentUser && state.currentUser._id === user._id;
+                const needsPasswordReset = user.forcePasswordChange || user.password === 'Password';
+                
+                return `
+                <div class="user-item">
+                    <div class="user-avatar">${getInitials(user.name)}</div>
+                    <div class="user-details">
+                        <div class="user-name">${user.name} ${isCurrentUser ? '(You)' : ''}</div>
+                        <div class="user-email">${user.email}</div>
+                    </div>
+                    <div><span class="role-badge role-${user.role.replace('-admin', '-admin')}">${roleInfo.name}</span></div>
+                    <div>
+                        <div class="status-indicator">
+                            <span class="status-dot ${user.status === 'active' ? 'status-active' : 'status-inactive'} ${needsPasswordReset ? 'status-pending-reset' : ''}"></span>
+                            <span>${user.status === 'active' ? 'Active' : 'Inactive'}</span>
+                        </div>
+                        <div class="tx-sub">${needsPasswordReset ? 'Password reset required' : 'Last login: ' + formatTimeAgo(user.lastLogin)}</div>
+                    </div>
+                    <div class="user-actions">
+                        ${canManageUsers && !isCurrentUser ? `
+                            <button class="btn btn-ghost btn-sm" onclick="openEditUserModal('${user._id}')">Edit</button>
+                        ` : ''}
+                        ${canResetPasswords && !isCurrentUser ? `
+                            <button class="btn btn-reset btn-sm" onclick="openResetPasswordModal('${user._id}')">Reset PW</button>
+                        ` : ''}
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        function renderTransactions(elementId, limit) {
+            const list = document.getElementById(elementId);
+            let filtered = state.transactions;
+            
+            if (elementId === 'full-tx-list' && state.txFilter !== 'all') {
+                filtered = filtered.filter(t => t.action === state.txFilter);
+            }
+
+            // Sort by timestamp (newest first)
+            filtered.sort((a, b) => b.timestamp - a.timestamp);
+
+            if (filtered.length === 0) {
+                list.innerHTML = '<li style="padding:40px; text-align:center; color: var(--text-muted)">No activity recorded.</li>';
+                return;
+            }
+
+            const displayList = elementId === 'recent-tx-list' ? filtered.slice(0, limit) : filtered;
+            
+            list.innerHTML = displayList.map(t => `
+                <li class="tx-item">
+                    <div style="display:flex; align-items:center;">
+                        <div class="tx-icon ${t.action === 'ADD' ? 'bg-add' : 'bg-take'}">
+                            ${t.action === 'ADD' ? '↑' : '↓'}
+                        </div>
+                        <div class="tx-details">
+                            <strong>${t.itemName}</strong>
+                            <span class="tx-sub">${formatFullDateTime(t.timestamp)}</span>
+                            <span class="tx-sub">${t.reason}</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="tx-sub" style="margin-bottom: 4px;">
+                            ${t.action === 'TAKE' ? `To: ${t.recipient}` : 'Restock'}
+                        </div>
+                        <div class="tx-user">
+                            By: ${t.user}
+                        </div>
+                    </div>
+                    <div class="${t.action === 'ADD' ? 'success' : 'gold-text'}" style="font-weight:bold; font-size: 1.1rem;">
+                        ${t.action === 'ADD' ? '+' : ''}${t.delta}
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        // --- Event Listeners ---
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const errorEl = document.getElementById('login-error');
+            
+            // Find user
+            const user = state.users.find(u => u.email === email && u.password === password);
+            
+            if (user && user.status === 'active') {
+                state.currentUser = user;
+                user.lastLogin = new Date();
+                
+                document.getElementById('login-view').classList.add('hidden');
+                document.getElementById('app-layout-view').classList.remove('hidden');
+                errorEl.style.display = 'none';
+                
+                // Check if password needs to be changed (either "Password" or forcePasswordChange flag)
+                if (password === 'Password' || user.forcePasswordChange === true) {
+                    document.getElementById('modal-change-password').showModal();
+                } else {
+                    renderAll();
+                }
+            } else {
+                errorEl.style.display = 'block';
+            }
+        });
+
+        document.getElementById('force-change-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (newPassword !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                alert('Password must be at least 6 characters!');
+                return;
+            }
+            
+            if (state.currentUser) {
+                state.currentUser.password = newPassword;
+                state.currentUser.forcePasswordChange = false;
+            }
+            
+            document.getElementById('modal-change-password').close();
+            renderAll();
+            alert('Password changed successfully!');
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            state.currentUser = null;
+            document.getElementById('app-layout-view').classList.add('hidden');
+            document.getElementById('login-view').classList.remove('hidden');
+            document.getElementById('login-form').reset();
+        });
+
+        // Forgot password modal
+        window.openForgotPasswordModal = () => {
+            document.getElementById('modal-forgot-password').showModal();
+        };
+
+        window.copyAdminEmail = () => {
+            const adminEmail = 'victor@cx';
+            navigator.clipboard.writeText(adminEmail).then(() => {
+                alert('Admin email copied to clipboard!');
+            });
+        };
+
+        // Reset password for user (admin function)
+        window.openResetPasswordModal = (userId) => {
+            if (!checkPermission('resetPasswords')) {
+                alert('You do not have permission to reset passwords.');
+                return;
+            }
+            
+            const user = state.users.find(u => u._id === userId);
+            document.getElementById('reset-user-id').value = user._id;
+            document.getElementById('reset-user-name').textContent = user.name;
+            document.getElementById('reset-user-email').textContent = user.email;
+            document.getElementById('reset-user-role').textContent = ROLE_PERMISSIONS[user.role].name;
+            
+            document.getElementById('modal-reset-user-password').showModal();
+        };
+
+        document.getElementById('reset-user-password-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('reset-user-id').value;
+            const user = state.users.find(u => u._id === userId);
+            
+            if (user) {
+                user.password = 'Password';
+                user.forcePasswordChange = true;
+                user.lastLogin = null;
+                
+                document.getElementById('modal-reset-user-password').close();
+                renderUsers();
+                
+                alert(`Password for ${user.name} has been reset to "Password". They will be forced to change it on next login.`);
+            }
+        });
+
+        window.openTakeModal = (id) => {
+            if (!checkPermission('takeGifts')) {
+                alert('You do not have permission to issue gifts.');
+                return;
+            }
+            
+            const gift = state.gifts.find(g => g._id === id);
+            document.getElementById('take-gift-id').value = id;
+            document.getElementById('take-gift-name').textContent = gift.name;
+            document.getElementById('take-gift-sku').textContent = gift.sku;
+            document.getElementById('take-max-qty').textContent = `${gift.quantity} ${gift.unit}${gift.quantity !== 1 ? 's' : ''}`;
+            document.getElementById('modal-take-gift').showModal();
+        };
+
+        document.getElementById('open-add-modal').addEventListener('click', () => {
+            if (!checkPermission('addGifts')) {
+                alert('You do not have permission to add new items.');
+                return;
+            }
+            document.getElementById('modal-add-gift').showModal();
+        });
+
+        document.getElementById('open-add-user-modal').addEventListener('click', () => {
+            if (!checkPermission('manageUsers')) {
+                alert('You do not have permission to manage users.');
+                return;
+            }
+            document.getElementById('modal-add-user').showModal();
+        });
+
+        document.querySelectorAll('.close-modal').forEach(btn => {
+            btn.addEventListener('click', () => btn.closest('dialog').close());
+        });
+
+        document.getElementById('take-gift-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const id = fd.get('giftId');
+            const qty = parseInt(fd.get('quantity'));
+            const idx = state.gifts.findIndex(g => g._id === id);
+
+            if (state.gifts[idx].quantity >= qty) {
+                state.gifts[idx].quantity -= qty;
+                
+                const newTransaction = {
+                    action: 'TAKE',
+                    itemName: state.gifts[idx].name,
+                    delta: -qty,
+                    recipient: fd.get('recipientName'),
+                    user: state.currentUser.name,
+                    timestamp: new Date(),
+                    reason: fd.get('reason')
+                };
+                
+                state.transactions.unshift(newTransaction);
+                document.getElementById('modal-take-gift').close();
+                e.target.reset();
+                renderAll();
+            }
+        });
+
+        document.getElementById('add-gift-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const name = fd.get('name');
+            const qty = parseInt(fd.get('quantity'));
+            
+            const newItem = {
+                _id: 'g' + Date.now(),
+                name: name,
+                sku: fd.get('sku'),
+                quantity: qty,
+                unit: 'item',
+                description: fd.get('description') || '',
+                createdAt: new Date(),
+                createdBy: state.currentUser.name
+            };
+            
+            state.gifts.push(newItem);
+            
+            const newTransaction = {
+                action: 'ADD',
+                itemName: name,
+                delta: qty,
+                recipient: '-',
+                user: state.currentUser.name,
+                timestamp: new Date(),
+                reason: 'New Item Added'
+            };
+            
+            state.transactions.unshift(newTransaction);
+            
+            document.getElementById('modal-add-gift').close();
+            e.target.reset();
+            renderAll();
+        });
+
+        document.getElementById('add-user-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            
+            // Check if email already exists
+            const email = fd.get('email');
+            if (state.users.some(u => u.email === email)) {
+                alert('A user with this email already exists.');
+                return;
+            }
+            
+            const newUser = {
+                _id: 'u' + Date.now(),
+                name: fd.get('name'),
+                email: email,
+                role: fd.get('role'),
+                password: 'Password', // Always set to "Password" initially
+                status: 'active',
+                lastLogin: null,
+                createdAt: new Date(),
+                forcePasswordChange: true // Force password change on first login
+            };
+            
+            state.users.push(newUser);
+            document.getElementById('modal-add-user').close();
+            e.target.reset();
+            renderAll();
+            
+            alert(`User "${newUser.name}" has been created with role: ${ROLE_PERMISSIONS[newUser.role].name}\nDefault password: "Password" (must be changed on first login)`);
+        });
+
+        window.openEditUserModal = (userId) => {
+            if (!checkPermission('manageUsers')) {
+                alert('You do not have permission to edit users.');
+                return;
+            }
+            
+            const user = state.users.find(u => u._id === userId);
+            if (!user) return;
+            
+            document.getElementById('edit-user-id').value = user._id;
+            document.getElementById('edit-user-name').value = user.name;
+            document.getElementById('edit-user-email').value = user.email;
+            document.getElementById('edit-user-role').value = user.role;
+            document.getElementById('edit-user-status').value = user.status;
+            
+            document.getElementById('modal-edit-user').showModal();
+        };
+
+        document.getElementById('reset-password-btn').addEventListener('click', () => {
+            const userId = document.getElementById('edit-user-id').value;
+            openResetPasswordModal(userId);
+        });
+
+        document.getElementById('edit-user-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const userId = fd.get('userId');
+            const idx = state.users.findIndex(u => u._id === userId);
+            
+            if (idx !== -1) {
+                // Check if email is being changed and if it's already taken by another user
+                let newEmail = fd.get('email');
+                
+                if (newEmail !== state.users[idx].email) {
+                    if (state.users.some(u => u._id !== userId && u.email === newEmail)) {
+                        alert('Another user already has this email address.');
+                        return;
+                    }
+                }
+                
+                state.users[idx].name = fd.get('name');
+                state.users[idx].email = newEmail;
+                state.users[idx].role = fd.get('role');
+                state.users[idx].status = fd.get('status');
+                
+                // If editing current user, update the currentUser reference
+                if (state.currentUser && state.currentUser._id === userId) {
+                    state.currentUser = state.users[idx];
+                    updateUIForCurrentUser();
+                }
+                
+                document.getElementById('modal-edit-user').close();
+                renderAll();
+            }
+        });
+
+        // Export CSV function
+        window.exportTransactions = () => {
+            if (!checkPermission('exportData')) {
+                alert('You do not have permission to export data.');
+                return;
+            }
+            
+            const headers = ['Date', 'Time', 'Action', 'Item', 'Quantity', 'Recipient', 'User', 'Reason'];
+            const csvData = state.transactions.map(t => [
+                t.timestamp.toLocaleDateString(),
+                t.timestamp.toLocaleTimeString(),
+                t.action,
+                t.itemName,
+                t.delta,
+                t.recipient,
+                t.user,
+                t.reason
+            ]);
+            
+            const csvContent = [
+                headers.join(','),
+                ...csvData.map(row => row.map(cell => `"${cell}"`).join(','))
+            ].join('\n');
+            
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `transactions_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        // Auto-login for demo purposes - VICTOR is now first
+        setTimeout(() => {
+            document.getElementById('login-email').value = 'victor@cx';
+            document.getElementById('login-password').value = 'Password';
+        }, 100);
+
+        // Initialize mobile responsiveness
+        function checkMobile() {
+            const isMobile = window.innerWidth <= 768;
+            document.body.classList.toggle('mobile', isMobile);
+        }
+        
+        window.addEventListener('resize', checkMobile);
+        checkMobile();
+    </script>
+</body>
+</html>
